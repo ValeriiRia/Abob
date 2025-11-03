@@ -1,0 +1,22 @@
+<div class="content-block">
+  <h2>Мои Проекты</h2>
+  
+  <dx-load-indicator [visible]="loading"></dx-load-indicator>
+
+  <dx-list
+    *ngIf="!loading"
+   ="projects" 
+    [height]="'100%'"
+    [searchEnabled]="true"
+    searchExpr="title">
+    
+    <div *dxTemplate="let item of 'item'" class="project-item">
+      <h3>{{item.title}}</h3>
+      <p>{{item.description}}</p>
+      <a [href]="item.project_link" target="_blank" rel="noopener noreferrer">
+        Посмотреть проект
+      </a>
+    </div>
+
+  </dx-list>
+</div>
