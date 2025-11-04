@@ -3,13 +3,21 @@
   <p>Вы должны войти в систему, чтобы иметь возможность редактировать.</p>
   
   <dx-data-grid
-   ="dataSource"="true"
-    [remoteOperations]="true" (onInitNewRow)="onInitNewRow($event)"> <dxo-paging="10"></dxo-paging>
+   ="dataSource"
+    keyExpr="id"
+    [remoteOperations]="true" 
+    (onInitNewRow)="onInitNewRow($event)">
+    
+    <dxo-paging="10"></dxo-paging>
     <dxo-filter-row [visible]="true"></dxo-filter-row>
     <dxo-header-filter [visible]="true"></dxo-header-filter>
     
     <dxo-editing
-      mode="popup" [allowAdding]="true" [allowUpdating]="true"="true" [useIcons]="true">
+      mode="popup"
+      [allowAdding]="true"
+      [allowUpdating]="true"
+     ="true" 
+      [useIcons]="true">
       
       <dxo-popup title="Проект Портфолио"="true" [width]="700" [height]="'auto'"></dxo-popup>
       

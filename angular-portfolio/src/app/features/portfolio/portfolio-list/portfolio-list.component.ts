@@ -1,47 +1,61 @@
-import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common'; // <-- ИСПРАВЛЕНИЕ: Требуется для *ngIf
+import { Component, OnInit, inject, Inject, PLATFORM_ID } from '@angular/core';
+//
+// Убедитесь, что 'isPlatformBrowser' импортирован из '@angular/common'
+//
+import { isPlatformBrowser, CommonModule } from '@angular/common'; 
 import { DxListModule } from 'devextreme-angular'; // [1, 2]
-// Убедитесь, что этот путь соответствует вашему файлу 'supabase.ts' [3]
-import { SupabaseService, Project } from '../../../core/services/supabase'; 
 import { DxLoadIndicatorModule } from 'devextreme-angular';
+
+// Убедитесь, что путь 'src/app/core/services/supabase' верен [3]
+import { SupabaseService, Project } from '../../../core/services/supabase'; 
 
 @Component({
   selector: 'app-portfolio-list',
   standalone: true,
-  //
-  // ИСПРАВЛЕНИЕ 1 (для ошибки на строке 11: "Expression expected"):
-  // 'imports' должен быть корректным массивом JavaScript.
-  //
-  imports:[ CommonModule, DxListModule, DxLoadIndicatorModule ],
+  imports:[CommonModule, DxListModule, DxLoadIndicatorModule], // [1, 2]
   templateUrl: './portfolio-list.component.html',
   styleUrls: ['./portfolio-list.component.scss']
 })
 export class PortfolioListComponent implements OnInit {
   supabase = inject(SupabaseService);
-  
-  //
-  // ИСПРАВЛЕНИЕ 2 (для ошибки на строке 20: "Expression expected" 
-  // и ошибки на строке 30: "Type 'any' is missing..."):
-  // 'projects' должен быть МАССИВОМ (Project) 
-  // и инициализирован (=).
-  //
-  projects: Project[] = []; 
-  
-  loading = true;
+  projects: Project [] = [];
+  loading = true; // По умолчанию true
+
+  // Внедряем PLATFORM_ID, чтобы знать, где выполняется код
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+    console.log('PortfolioListComponent: КОНСТРУКТОР. Компонент создан.');
+  }
 
   async ngOnInit() {
-    const { data, error } = await this.supabase.getProjects(); // [3]
+    console.log('PortfolioListComponent: ngOnInit() СТАРТ');
     
-    if (data) {
+    //
+    // Эта проверка КРИТИЧЕСКИ ВАЖНА
+    //
+    if (isPlatformBrowser(this.platformId)) {
       //
-      // Теперь это присваивание корректно, так как 'data' (массив)
-      // присваивается 'this.projects' (массив Project).
+      // === ВЫ УВИДИТЕ ЭТО В КОНСОЛИ БРАУЗЕРА (F12) ===
       //
-      this.projects = data; 
+      console.log('PortfolioListComponent: ПЛАТФОРМА = БРАУЗЕР. Выполняю запрос...');
+      this.loading = true;
+      const { data, error } = await this.supabase.getProjects(); // [3]
+      
+      if (data) {
+        console.log('PortfolioListComponent: Данные получены:', data);
+        this.projects = data;
+      }
+      if (error) {
+        console.error('PortfolioListComponent: Ошибка загрузки проектов:', error);
+      }
+      this.loading = false;
+      
+    } else {
+      //
+      // === ВЫ УВИДИТЕ ЭТО В ТЕРМИНАЛЕ (ГДЕ ЗАПУЩЕН 'ng serve') ===
+      //
+      console.log('PortfolioListComponent: ПЛАТФОРМА = СЕРВЕР (SSR). Пропускаю запрос.');
+      // 'this.supabase' здесь 'undefined', поэтому мы НИЧЕГО не вызываем.
+      // Ошибка должна исчезнуть.
     }
-    if (error) {
-      console.error('Ошибка загрузки проектов:', error);
-    }
-    this.loading = false;
   }
 }

@@ -1,98 +1,104 @@
-import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { DxDataGridModule, DxTextAreaModule } from 'devextreme-angular'; // [2, 3]
-import CustomStore from 'devextreme/data/custom_store'; // [4, 1]
-import { SupabaseService } from '../../../core/services/supabase'; // [5] (Проверьте, что путь верный)
+import { Component, OnInit, inject, Inject, PLATFORM_ID } from '@angular/core';
+//
+// ИСПРАВЛЕНИЕ: Добавляем isPlatformBrowser и CommonModule
+//
+import { isPlatformBrowser, CommonModule } from '@angular/common'; 
+//
+// ИСПРАВЛЕНИЕ: Добавляем модули DevExtreme, которые используются в шаблоне
+//
+import { DxDataGridModule, DxTextAreaModule } from 'devextreme-angular'; 
+import CustomStore from 'devextreme/data/custom_store'; // [3]
+//
+// ИСПРАВЛЕНИЕ: Используем правильный относительный путь к сервису
+//
+import { SupabaseService } from '../../../core/services/supabase'; // 
 
 @Component({
   selector: 'app-portfolio-admin',
   standalone: true,
-  imports: [CommonModule, DxDataGridModule, DxTextAreaModule], // [2, 3]
+  //
+  // --- ВОТ ИСПРАВЛЕННЫЙ IMPORTS: ---
+  //
+  imports: [CommonModule, DxDataGridModule, DxTextAreaModule],
   templateUrl: './portfolio-admin.component.html',
+  styleUrls: ['./portfolio-admin.component.scss'] // 
 })
-export class PortfolioAdminComponent implements OnInit { // Реализуем OnInit
+export class PortfolioAdminComponent implements OnInit { 
   supabase = inject(SupabaseService);
-  dataSource: CustomStore; // [4]
+  dataSource: CustomStore; // [3]
 
-  constructor() {
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+    console.log('PortfolioAdminComponent: КОНСТРУКТОР. Компонент создан.');
+    
     //
-    // ИСПРАВЛЕНИЕ: Вся логика CustomStore (включая 'load', 'insert' и т.д.)
-    // ДОЛЖНА быть ВНУТРИ объекта, передаваемого в 'new CustomStore'.
+    // ИСПРАВЛЕНИЕ: Убраны все маркеры [3] из объекта
     //
-    this.dataSource = new CustomStore({ // [4, 1]
-      key: 'id', // Укажем ключ для операций update/delete
+    this.dataSource = new CustomStore({ // [3]
+      key: 'id', 
 
-      /**
-       * LOAD (Чтение)
-       */
-      load: async (loadOptions: any) => { // [1]
-        const { data, error } = await this.supabase.getProjects(); // [5, 6]
-        if (error) {
-          console.error('Ошибка загрузки:', error);
-          throw new Error('Ошибка загрузки данных');
+      load: async (loadOptions: any) => { // [3]
+        if (isPlatformBrowser(this.platformId)) {
+          console.log('PortfolioAdminComponent: CustomStore load() вызван.');
+          const { data, error } = await this.supabase.getProjects(); // 
+          if (error) {
+            console.error('Admin Ошибка загрузки:', error);
+            throw new Error('Ошибка загрузки данных');
+          }
+          console.log('PortfolioAdminComponent: CustomStore данные получены:', data);
+          return data;
         }
-        return data;
+        console.log('PortfolioAdminComponent: CustomStore load() вызван на СЕРВЕРЕ (SSR). Пропускаю.');
+        return; // На сервере возвращаем пустой массив
       },
 
-      /**
-       * INSERT (Создание)
-       */
-      insert: async (values: any) => { // [1]
-        const { data, error } = await this.supabase.createProject(values); // [5, 7]
+      insert: async (values: any) => { // [3]
+        console.log('PortfolioAdminComponent: CustomStore insert() вызван.', values);
+        const { data, error } = await this.supabase.createProject(values); // 
         if (error ||!data) {
-          console.error('Ошибка создания:', error);
+          console.error('Admin Ошибка создания:', error);
           throw new Error('Ошибка создания записи');
         }
         return data;
       },
 
-      /**
-       * UPDATE (Обновление)
-       */
-      update: async (key: any, values: any) => { // [1]
-        const { data, error } = await this.supabase.updateProject(key, values); // [5, 8]
+      update: async (key: any, values: any) => { // [3]
+        console.log('PortfolioAdminComponent: CustomStore update() вызван.', key, values);
+        const { data, error } = await this.supabase.updateProject(key, values); // 
         if (error ||!data) {
-          console.error('Ошибка обновления:', error);
+          console.error('Admin Ошибка обновления:', error);
           throw new Error('Ошибка обновления записи');
         }
         return data;
       },
 
-      /**
-       * REMOVE (Удаление)
-       */
-      remove: async (key: any) => { // [1]
-        const { error } = await this.supabase.deleteProject(key); // [5, 9]
+      remove: async (key: any) => { // [3]
+        console.log('PortfolioAdminComponent: CustomStore remove() вызван.', key);
+        const { error } = await this.supabase.deleteProject(key); // 
         if (error) {
-          console.error('Ошибка удаления:', error);
+          console.error('Admin Ошибка удаления:', error);
           throw new Error('Ошибка удаления записи');
         }
       }
-    }); // <-- Закрывающая скобка для new CustomStore()
-  } // <-- Закрывающая скобка для constructor()
+    }); 
+  } 
 
-  //
-  // ИСПРАВЛЕНИЕ: Добавлен недостающий метод 'ngOnInit', 
-  // который требовал интерфейс 'OnInit'.
-  //
   ngOnInit(): void { 
-    // ngOnInit() теперь существует, ошибка "incorrectly implements" исчезнет.
+    console.log('PortfolioAdminComponent: ngOnInit() СТАРТ. Этот лог доказывает, что authGuard вас пропустил.');
   }
 
   // Этот метод нужен для RLS-политики INSERT
   async onInitNewRow(e: any) {
+    console.log('PortfolioAdminComponent: onInitNewRow() вызван.');
     try {
-      // Получаем ID текущего пользователя из Supabase Auth
-      const { data: { user } } = await this.supabase.supabase.auth.getUser(); // [5]
+      const { data: { user } } = await this.supabase.getUser(); // 
       if (user) {
-        // Внедряем 'user_id' в данные новой строки
         e.data.user_id = user.id; 
       } else {
-        console.error('Пользователь не аутентифицирован, создание невозможно.');
-        e.cancel = true; // Отменяем создание строки
+        console.error('Admin Ошибка: Пользователь не аутентифицирован, onInitNewRow не может добавить user_id.');
+        e.cancel = true; 
       }
-    } catch (error) {
-      console.error('Ошибка получения пользователя:', error);
+    } catch (error: any) {
+      console.error('Admin Ошибка получения пользователя в onInitNewRow:', error.message);
       e.cancel = true;
     }
   }
