@@ -1,0 +1,44 @@
+<div class="content-block">
+  <h2>Управление Портфолио</h2>
+  
+  <dx-data-grid
+    *ngIf="isBrowser"
+    [dataSource]="dataSource"
+    keyExpr="id"
+    [remoteOperations]="true" 
+    (onInitNewRow)="onInitNewRow($event)">
+    
+    <dxo-paging [pageSize]="10"></dxo-paging>
+    <dxo-filter-row [visible]="true"></dxo-filter-row>
+    <dxo-header-filter [visible]="true"></dxo-header-filter>
+    
+    <dxo-editing
+      mode="popup"
+      [allowAdding]="true"
+      [allowUpdating]="true"
+      [allowDeleting]="true" 
+      [useIcons]="true">
+      
+      <dxo-popup title="Проект Портфолио" [showTitle]="true" [width]="700" [height]="'auto'"></dxo-popup>
+      
+      <dxo-form>
+        <dxi-item itemType="group" caption="Основная информация" [colCount]="2">
+          <dxi-item dataField="title" [colSpan]="2"></dxi-item>
+          <dxi-item dataField="description" editorType="dxTextArea" [colSpan]="2"></dxi-item>
+          <dxi-item dataField="project_link" [colSpan]="2"></dxi-item>
+          <dxi-item dataField="image_url" [colSpan]="2"></dxi-item>
+        </dxi-item>
+      </dxo-form>
+    </dxo-editing>
+    
+    <dxi-column dataField="id" [visible]="false" [formItem]="{ visible: false }"></dxi-column>
+    <dxi-column dataField="user_id" [visible]="false" [formItem]="{ visible: false }"></dxi-column>
+    
+    <dxi-column dataField="title" caption="Название"></dxi-column>
+    <dxi-column dataField="description" caption="Описание" [visible]="false"></dxi-column>
+    <dxi-column dataField="project_link" caption="Ссылка"></dxi-column>
+    <dxi-column dataField="image_url" caption="URL Изображения" [visible]="false"></dxi-column>
+    <dxi-column dataField="created_at" caption="Создан" dataType="date" [allowEditing]="false"></dxi-column>
+
+  </dx-data-grid>
+</div>

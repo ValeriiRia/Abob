@@ -1,0 +1,31 @@
+<div class="content-block">
+  <h2>Мои Проекты</h2>
+  
+  <dx-load-indicator *ngIf="isBrowser" [visible]="loading"></dx-load-indicator>
+
+  <dx-list
+    *ngIf="isBrowser && !loading"
+    [dataSource]="projects" 
+    [height]="'100%'"
+    [searchEnabled]="true"
+    searchExpr="title">
+    
+    <div *dxTemplate="let item of 'item'" class="project-item">
+      <div class="project-image-container">
+        <img *ngIf="item.image_url" [src]="item.image_url" [alt]="item.title" class="project-image">
+        <a *ngIf="item.image_url" [href]="item.image_url" target="_blank" rel="noopener noreferrer" class="image-view-button">
+          Посмотреть изображение
+        </a>
+      </div>
+
+      <div class="project-details">
+        <h3>{{item.title}}</h3>
+        <p>{{item.description}}</p>
+        <a [href]="item.project_link" target="_blank" rel="noopener noreferrer" class="project-link-button">
+          Перейти на проект
+        </a>
+      </div>
+    </div>
+
+  </dx-list>
+</div>
